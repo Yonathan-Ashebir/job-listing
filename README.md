@@ -53,7 +53,7 @@ This project was built by carefully copying and implementing a design from Figma
   - Color accuracy checks
   - Typography consistency validation
 
-![Design Comparison](./public/dashboard-compare.png)
+![Design Comparison](./dashboard-compare.png)
 
 *Comparison between the Figma design (left) and the final implementation (right)*
 
@@ -86,7 +86,7 @@ This project was built by carefully copying and implementing a design from Figma
 
 ### Logic Implementation
 - **Sorting Options**: Implemented sorting by "Most relevant" (default order) and "Most recent" (by posted date)
-- **Multi-Category Coloring**: Tags alternate colors based on odd/even index
+- **Multi-Category Coloring**: Tags alternate colors (orange/purple) based on odd/even index
 - **Pagination**: Full pagination system with Previous/Next buttons and page numbers
 - **Location Detection**: Automatic detection of "Online" vs "In Person" based on location keywords
 
