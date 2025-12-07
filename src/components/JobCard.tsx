@@ -5,65 +5,209 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job }: JobCardProps) => {
-  // Determine if job is "In Person" or "Online" based on location
-  // For now, we'll use a simple heuristic - if location contains specific keywords
   const isOnline = job.about.location.toLowerCase().includes('remote') || 
                    job.description.toLowerCase().includes('remote') ||
                    job.description.toLowerCase().includes('online');
   const locationType = isOnline ? 'Online' : 'In Person';
 
   return (
-    <div className="bg-white rounded-lg p-6 hover:shadow-md transition-shadow" style={{ border: '1px solid #7C8493' }}>
-      <div className="flex items-start gap-4">
-        {/* Company Logo */}
-        <div className="flex-shrink-0">
-          <img 
-            src={job.image} 
-            alt={`${job.company} logo`}
-            className="w-16 h-16 object-contain rounded-lg"
-            style={{ border: '1px solid #7C8493' }}
-            onError={(e) => {
-              // Fallback if image doesn't exist
-              const target = e.target as HTMLImageElement;
-              target.src = 'https://via.placeholder.com/64?text=' + job.company.charAt(0);
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: '30px',
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: '#D6DDEB',
+        padding: '24px'
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          gap: '24px',
+          width: '100%',
+          maxWidth: '844px'
+        }}
+      >
+        <img
+          src={job.image}
+          alt={`${job.company} logo`}
+          style={{
+            width: '66px',
+            height: '59px',
+            objectFit: 'contain'
+          }}
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://via.placeholder.com/66x59?text=' + job.company.charAt(0);
+          }}
+        />
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            flex: 1
+          }}
+        >
+          <span
+            style={{
+              height: '24px',
+              fontFamily: 'Epilogue',
+              fontWeight: 600,
+              fontSize: '20px',
+              lineHeight: '120%',
+              letterSpacing: '0%',
+              color: '#25324B'
             }}
-          />
-        </div>
-
-        {/* Job Details */}
-        <div className="flex-1 min-w-0">
-          {/* Job Title */}
-          <h3 className="text-xl font-semibold text-gray-900 mb-1">
+          >
             {job.title}
-          </h3>
+          </span>
 
-          {/* Company Name */}
-          <p className="text-sm mb-3" style={{ color: '#7C8493' }}>
-            {job.company}
-          </p>
-
-          {/* Description */}
-          <p className="text-sm mb-4 line-clamp-2" style={{ color: '#7C8493' }}>
-            {job.description}
-          </p>
-
-          {/* Location Type and Tags */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Location Type Badge */}
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {locationType}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '8px',
+              alignItems: 'center',
+              padding: '0.5px'
+            }}
+          >
+            <span
+              style={{
+                fontFamily: 'Epilogue',
+                fontWeight: 400,
+                fontSize: '16px',
+                lineHeight: '160%',
+                letterSpacing: '0%',
+                color: '#7C8493'
+              }}
+            >
+              {job.company}
             </span>
 
-            {/* Industry Tags */}
-            {job.about.categories.map((category, index) => (
-              <span 
-                key={index}
-                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
-                style={{ backgroundColor: '#7C8493', color: '#ffffff' }}
+            <svg width="4" height="4" viewBox="0 0 4 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="2" cy="2" r="2" fill="#7C8493"/>
+            </svg>
+
+            <span
+              style={{
+                fontFamily: 'Epilogue',
+                fontWeight: 400,
+                fontSize: '16px',
+                lineHeight: '160%',
+                letterSpacing: '0%',
+                color: '#7C8493'
+              }}
+            >
+              {job.about.location}
+            </span>
+          </div>
+
+          <span
+            style={{
+              fontFamily: 'Epilogue',
+              fontWeight: 400,
+              fontSize: '16px',
+              lineHeight: '160%',
+              letterSpacing: '0%',
+              color: '#25324B'
+            }}
+          >
+            {job.description}
+          </span>
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '8px',
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }}
+          >
+            <span
+              style={{
+                background: '#56CDAD1A',
+                gap: '8px',
+                borderRadius: '80px',
+                paddingTop: '6px',
+                paddingRight: '10px',
+                paddingBottom: '6px',
+                paddingLeft: '10px',
+                display: 'inline-flex',
+                alignItems: 'center'
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'Epilogue',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  lineHeight: '160%',
+                  letterSpacing: '0%',
+                  height: '19px',
+                  color: '#56CDAD'
+                }}
               >
-                {category}
+                {locationType}
               </span>
-            ))}
+            </span>
+
+            {job.about.categories.length > 0 && (
+              <>
+                <div
+                  style={{
+                    height: '100%',
+                    width: '1px',
+                    backgroundColor: '#D6DDEB'
+                  }}
+                />
+
+                {job.about.categories.map((category, index) => {
+                  const isEven = index % 2 === 0;
+                  const borderColor = isEven ? '#FFB836' : '#4640DE';
+                  const textColor = isEven ? '#FFB836' : '#4640DE';
+
+                  return (
+                    <span
+                      key={index}
+                      style={{
+                        gap: '8px',
+                        borderRadius: '80px',
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                        borderColor: borderColor,
+                        paddingTop: '5px', // Note: accouting for 1px border - different from how things are in figma
+                        paddingRight: '9px', // Note: accouting for 1px border - different from how things are in figma
+                        paddingBottom: '5px', // Note: accouting for 1px border - different from how things are in figma
+                        paddingLeft: '9px', // Note: accouting for 1px border - different from how things are in figma
+                        display: 'inline-flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <span
+                        style={{
+                          height: '19px',
+                          color: textColor,
+                          fontFamily: 'Epilogue',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          lineHeight: '160%',
+                          letterSpacing: '0%'
+                        }}
+                      >
+                        {category}
+                      </span>
+                    </span>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
       </div>

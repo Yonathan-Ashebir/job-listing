@@ -37,7 +37,7 @@
                 ]
             },
             "company": "ABC Media",
-            "image": "/job1.png"
+            "image": "/job1.jpg"
         },
         {
             "title": "Web developer",
@@ -77,7 +77,7 @@
                 ]
             },
             "company": "Tech Innovators",
-            "image": "/job2.png"
+            "image": "/job2.jpg"
         },
         {
             "title": "Graphic designer",
@@ -118,7 +118,7 @@
                 ]
             },
             "company": "Creative Designs Co.",
-            "image": "/job3.png"
+            "image": "/job3.jpg"
         },
         {
             "title": "Data analyst",
@@ -200,7 +200,7 @@
                 ]
             },
             "company": "Customer Care Ltd.",
-            "image": "/job2.png"
+            "image": "/job2.jpg"
         }
     ]
 }
