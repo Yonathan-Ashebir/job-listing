@@ -3,6 +3,9 @@ import type { JobPosting, JobData, SortOption } from '../types';
 import JobCard from './JobCard';
 import Headline from './Headline';
 import jobDataJson from '../data/jobPostings.json';
+import { colors } from '../theme/colors';
+import { dimensions } from '../theme/dimensions';
+import { fonts } from '../theme/fonts';
 
 const jobData = jobDataJson as JobData;
 
@@ -46,14 +49,14 @@ const JobListingDashboard = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto" style={{ maxWidth: '919px', padding: "72px 0px" }}>
+      <div className="mx-auto" style={{ maxWidth: dimensions.sizes.container.dashboardMaxWidth, padding: `${dimensions.spacing.huge} 0px` }}>
         <Headline 
           resultsCount={sortedJobs.length}
           sortBy={sortBy}
           onSortChange={handleSortChange}
         />
 
-        <div className="mb-8" style={{ display: 'flex', flexDirection: 'column', gap: '35px' }}>
+        <div className="mb-8 flex flex-col" style={{ gap: dimensions.spacing.xxxl }}>
           {paginatedJobs.map((job, index) => (
             <JobCard key={`${job.company}-${job.title}-${index}`} job={job} />
           ))}
@@ -64,15 +67,19 @@ const JobListingDashboard = () => {
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 rounded text-sm font-medium bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ border: '1px solid #7C8493', color: '#7C8493', fontFamily: 'Epilogue' }}
+              className="px-4 py-2 rounded text-sm font-medium bg-white disabled:opacity-50 disabled:cursor-not-allowed border border-solid"
+              style={{ 
+                borderColor: colors.gray.medium, 
+                color: colors.gray.medium, 
+                fontFamily: fonts.epilogue 
+              }}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'rgba(124, 132, 147, 0.1)';
+                  e.currentTarget.style.backgroundColor = colors.grayHover;
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.backgroundColor = colors.white;
               }}
             >
               Previous
@@ -86,17 +93,24 @@ const JobListingDashboard = () => {
                   className={`px-3 py-2 text-sm font-medium rounded ${
                     currentPage === page
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white'
+                      : 'bg-white border border-solid'
                   }`}
-                  style={currentPage === page ? { fontFamily: 'Epilogue' } : { border: '1px solid #7C8493', color: '#7C8493', fontFamily: 'Epilogue' }}
+                  style={currentPage === page 
+                    ? { fontFamily: fonts.epilogue } 
+                    : { 
+                        borderColor: colors.gray.medium, 
+                        color: colors.gray.medium, 
+                        fontFamily: fonts.epilogue 
+                      }
+                  }
                   onMouseEnter={(e) => {
                     if (currentPage !== page) {
-                      e.currentTarget.style.backgroundColor = 'rgba(124, 132, 147, 0.1)';
+                      e.currentTarget.style.backgroundColor = colors.grayHover;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (currentPage !== page) {
-                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.backgroundColor = colors.white;
                     }
                   }}
                 >
@@ -108,15 +122,19 @@ const JobListingDashboard = () => {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded text-sm font-medium bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ border: '1px solid #7C8493', color: '#7C8493', fontFamily: 'Epilogue' }}
+              className="px-4 py-2 rounded text-sm font-medium bg-white disabled:opacity-50 disabled:cursor-not-allowed border border-solid"
+              style={{ 
+                borderColor: colors.gray.medium, 
+                color: colors.gray.medium, 
+                fontFamily: fonts.epilogue 
+              }}
               onMouseEnter={(e) => {
                 if (!e.currentTarget.disabled) {
-                  e.currentTarget.style.backgroundColor = 'rgba(124, 132, 147, 0.1)';
+                  e.currentTarget.style.backgroundColor = colors.grayHover;
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'white';
+                e.currentTarget.style.backgroundColor = colors.white;
               }}
             >
               Next
