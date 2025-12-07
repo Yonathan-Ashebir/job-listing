@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { JobPosting } from '../types';
 import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';
@@ -6,6 +7,7 @@ import { typography } from '../theme/typography';
 
 interface JobCardProps {
   job: JobPosting;
+  jobIndex: number;
 }
 
 interface CompanyLogoProps {
@@ -70,19 +72,25 @@ const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
   );
 };
 
-const JobCard = ({ job }: JobCardProps) => {
+const JobCard = ({ job, jobIndex }: JobCardProps) => {
+  const navigate = useNavigate();
   const isOnline = job.about.location.toLowerCase().includes('remote') || 
                    job.description.toLowerCase().includes('remote') ||
                    job.description.toLowerCase().includes('online');
   const locationType = isOnline ? 'Online' : 'In Person';
 
+  const handleCardClick = () => {
+    navigate(`/job/${jobIndex}`);
+  };
+
   return (
     <div
-      className="w-full flex justify-center items-center border border-solid p-6"
+      className="w-full flex justify-center items-center border border-solid p-6 cursor-pointer hover:shadow-md transition-shadow"
       style={{
         borderRadius: dimensions.borderRadius.card,
         borderColor: colors.gray.light,
       }}
+      onClick={handleCardClick}
     >
       <div className="flex gap-6 w-full" style={{ maxWidth: dimensions.sizes.container.maxWidth }}>
         <CompanyLogo src={job.image} alt={`${job.company} logo`} company={job.company} />
