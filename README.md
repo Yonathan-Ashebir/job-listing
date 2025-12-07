@@ -57,6 +57,22 @@ This project was built by carefully copying and implementing a design from Figma
 
 *Comparison between the Figma design (left) and the final implementation (right)*
 
+### Job Details Page
+
+The job details page provides comprehensive information about each job posting, including:
+
+- **Description**: Full job description
+- **Responsibilities**: List of job responsibilities with checkmark icons
+- **Ideal Candidate**: Traits and requirements for the ideal candidate
+- **When & Where**: Location and work arrangement information
+- **About Section**: Posted date, deadline, location, start/end dates
+- **Categories**: Job categories with color-coded tags
+- **Required Skills**: Skills needed for the position
+
+![Job Details Page](./job-details-compare.png)
+
+*Job details page showing comprehensive job information*
+
 ## Additional Implementation Details
 
 ### Component Modularization
