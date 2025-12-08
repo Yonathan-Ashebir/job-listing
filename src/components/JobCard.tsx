@@ -44,7 +44,7 @@ interface TagProps {
 const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
   return (
     <span
-      className="inline-flex items-center rounded-full border border-solid"
+      className="inline-flex items-center rounded-full border border-solid justify-center"
       style={{
         borderRadius: dimensions.borderRadius.tag,
         borderColor: borderColor || 'transparent',
@@ -53,6 +53,7 @@ const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
         paddingRight: backgroundColor ? dimensions.padding.locationBadge.right : dimensions.padding.tag.right,
         paddingBottom: backgroundColor ? dimensions.padding.locationBadge.bottom : dimensions.padding.tag.bottom,
         paddingLeft: backgroundColor ? dimensions.padding.locationBadge.left : dimensions.padding.tag.left,
+        minWidth: '60px',
       }}
     >
       <span
