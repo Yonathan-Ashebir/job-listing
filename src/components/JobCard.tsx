@@ -8,6 +8,7 @@ import { typography } from '../theme/typography';
 interface JobCardProps {
   job: JobPosting;
   jobIndex: number;
+  jobId?: string; // API job ID, used for navigation
 }
 
 interface CompanyLogoProps {
@@ -44,7 +45,7 @@ interface TagProps {
 const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
   return (
     <span
-      className="inline-flex items-center rounded-full border border-solid justify-center"
+      className="inline-flex items-center rounded-full border border-solid justify-center flex-shrink-0"
       style={{
         borderRadius: dimensions.borderRadius.tag,
         borderColor: borderColor || 'transparent',
@@ -54,6 +55,7 @@ const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
         paddingBottom: backgroundColor ? dimensions.padding.locationBadge.bottom : dimensions.padding.tag.bottom,
         paddingLeft: backgroundColor ? dimensions.padding.locationBadge.left : dimensions.padding.tag.left,
         minWidth: '60px',
+        width: 'max-content'
       }}
     >
       <span
@@ -73,7 +75,7 @@ const Tag = ({ text, borderColor, textColor, backgroundColor }: TagProps) => {
   );
 };
 
-const JobCard = ({ job, jobIndex }: JobCardProps) => {
+const JobCard = ({ job, jobIndex, jobId }: JobCardProps) => {
   const navigate = useNavigate();
   const isOnline = job.about.location.toLowerCase().includes('remote') || 
                    job.description.toLowerCase().includes('remote') ||
@@ -81,7 +83,9 @@ const JobCard = ({ job, jobIndex }: JobCardProps) => {
   const locationType = isOnline ? 'Online' : 'In Person';
 
   const handleCardClick = () => {
-    navigate(`/job/${jobIndex}`);
+    // Use jobId if available (from API), otherwise use jobIndex (from JSON)
+    const routeId = jobId || jobIndex.toString();
+    navigate(`/job/${routeId}`);
   };
 
   return (
@@ -157,7 +161,7 @@ const JobCard = ({ job, jobIndex }: JobCardProps) => {
             {job.description}
           </span>
 
-          <div className="flex flex-row items-center flex-wrap" style={{ gap: dimensions.spacing.sm }}>
+          <div className="flex flex-row items-center" style={{ gap: dimensions.spacing.sm }}>
             <Tag
               text={locationType}
               textColor={colors.primary.green}
@@ -174,20 +178,22 @@ const JobCard = ({ job, jobIndex }: JobCardProps) => {
                   }}
                 />
 
-                {job.about.categories.map((category, index) => {
-                  const isEven = index % 2 === 0;
-                  const borderColor = isEven ? colors.primary.orange : colors.primary.blue;
-                  const textColor = isEven ? colors.primary.orange : colors.primary.blue;
+                <div className="flex flex-row items-center flex-wrap" style={{ gap: dimensions.spacing.sm }}>
+                  {job.about.categories.map((category, index) => {
+                    const isEven = index % 2 === 0;
+                    const borderColor = isEven ? colors.primary.orange : colors.primary.blue;
+                    const textColor = isEven ? colors.primary.orange : colors.primary.blue;
 
-                  return (
-                    <Tag
-                      key={index}
-                      text={category}
-                      borderColor={borderColor}
-                      textColor={textColor}
-                    />
-                  );
-                })}
+                    return (
+                      <Tag
+                        key={index}
+                        text={category}
+                        borderColor={borderColor}
+                        textColor={textColor}
+                      />
+                    );
+                  })}
+                </div>
               </>
             )}
           </div>

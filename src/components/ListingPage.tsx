@@ -1,21 +1,61 @@
-import { useState, useMemo } from 'react';
-import type { JobPosting, JobData, SortOption } from '../types';
+import { useState, useMemo, useEffect } from 'react';
+import type { JobPosting, SortOption } from '../types';
 import JobCard from './JobCard';
 import Headline from './Headline';
-import jobDataJson from '../data/jobPostings.json';
+import { fetchOpportunities } from '../services/api';
+import { mapApiOpportunityToJobPosting } from '../utils/apiMapper';
 import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';
 import { fonts } from '../theme/fonts';
 
-const jobData = jobDataJson as JobData;
-export const allJobs: JobPosting[] = jobData.job_postings;
+// Store API opportunities with their IDs for navigation
+export const apiOpportunitiesMap = new Map<string, JobPosting>();
 
 const ListingPage = () => {
   const [sortBy, setSortBy] = useState<SortOption>('Most relevant');
   const [currentPage, setCurrentPage] = useState(1);
+  const [jobs, setJobs] = useState<JobPosting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 100;
 
-  const jobs: JobPosting[] = allJobs;
+  // Fetch opportunities from API
+  useEffect(() => {
+    const loadOpportunities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const apiOpportunities = await fetchOpportunities();
+        
+        // Handle empty response
+        if (!apiOpportunities || apiOpportunities.length === 0) {
+          setError('No opportunities available at this time.');
+          setJobs([]);
+          setLoading(false);
+          return;
+        }
+        
+        const mappedJobs = apiOpportunities.map(mapApiOpportunityToJobPosting);
+        
+        // Store in map with API IDs for later reference
+        apiOpportunities.forEach((apiOpp, index) => {
+          if (apiOpp.id && mappedJobs[index]) {
+            apiOpportunitiesMap.set(apiOpp.id, mappedJobs[index]);
+          }
+        });
+        
+        setJobs(mappedJobs);
+      } catch (err) {
+        console.error('Failed to load opportunities:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load job opportunities. Please try again later.');
+        setJobs([]); // Set empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOpportunities();
+  }, []);
 
   // Sort jobs based on selected option
   const sortedJobs = useMemo(() => {
@@ -46,22 +86,70 @@ const ListingPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto" style={{ maxWidth: dimensions.sizes.container.dashboardMaxWidth, padding: `${dimensions.spacing.massive} 0px` }}>
+      <div className="mx-auto" style={{ maxWidth: `calc(${dimensions.sizes.container.dashboardMaxWidth} + 40px)`, padding: `${dimensions.spacing.massive} 20px` }}>
         <Headline
           resultsCount={sortedJobs.length}
           sortBy={sortBy}
           onSortChange={setSortBy}
         />
-        <div className="flex flex-col" style={{ gap: dimensions.spacing.huge }}>
-          {paginatedJobs.map((job, index) => {
-            const globalIndex = allJobs.findIndex((j: JobPosting) => 
-              j.title === job.title && j.company === job.company && j.about.posted_on === job.about.posted_on
-            );
-            return (
-              <JobCard key={`${job.company}-${job.title}-${index}`} job={job} jobIndex={globalIndex >= 0 ? globalIndex : index} />
-            );
-          })}
-        </div>
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+              <p style={{ fontFamily: fonts.epilogue, color: colors.gray.dark }}>Loading opportunities...</p>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center max-w-md">
+              <p style={{ fontFamily: fonts.epilogue, color: colors.primary.orange, fontSize: '18px', marginBottom: '8px' }}>
+                Error loading opportunities
+              </p>
+              <p style={{ fontFamily: fonts.epilogue, color: colors.gray.dark }}>
+                {error}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 px-4 py-2 rounded"
+                style={{
+                  fontFamily: fonts.epilogue,
+                  backgroundColor: colors.primary.blue,
+                  color: colors.white,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="flex flex-col" style={{ gap: dimensions.spacing.huge }}>
+            {paginatedJobs.map((job, index) => {
+              // Find the API ID for this job
+              let apiId: string | undefined;
+              for (const [id, mappedJob] of apiOpportunitiesMap.entries()) {
+                if (
+                  mappedJob.title === job.title &&
+                  mappedJob.company === job.company &&
+                  mappedJob.about.posted_on === job.about.posted_on
+                ) {
+                  apiId = id;
+                  break;
+                }
+              }
+              // Use API ID if found, otherwise use index
+              const jobId = apiId || `job-${index}`;
+              return (
+                <JobCard key={`${job.company}-${job.title}-${index}`} job={job} jobIndex={index} jobId={jobId} />
+              );
+            })}
+          </div>
+        )}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8 mb-8">
             <button

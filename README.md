@@ -1,6 +1,6 @@
 # Job Listing Dashboard
 
-A modern, responsive job listing dashboard built with React, TypeScript, and Tailwind CSS. This application displays job opportunities with filtering, sorting, and pagination capabilities.
+A modern, responsive job listing dashboard built with React, TypeScript, and Tailwind CSS. This application displays job opportunities with filtering, sorting, and pagination capabilities, integrated with a live API.
 
 This project is part of the **a2sv** program, a comprehensive software engineering training initiative.
 
@@ -9,11 +9,14 @@ This project is part of the **a2sv** program, a comprehensive software engineeri
 - **Job Card Display**: Beautiful card-based layout showcasing job opportunities
 - **Sorting**: Sort jobs by "Most relevant" or "Most recent"
 - **Pagination**: Navigate through job listings with pagination controls
+- **API Integration**: Fetches real-time data from Akil Backend API
 - **Responsive Design**: Fully responsive layout that works on all screen sizes
 - **Type Safety**: Built with TypeScript for enhanced developer experience
 - **Theme System**: Centralized theme configuration for colors, dimensions, fonts, and typography
 
-## Design Implementation
+## Task 6: Building Job Listing Application
+
+### Design Implementation
 
 This project was built by carefully copying and implementing a design from Figma. The following describes how the design was translated into code:
 
@@ -53,7 +56,7 @@ This project was built by carefully copying and implementing a design from Figma
   - Color accuracy checks
   - Typography consistency validation
 
-![Design Comparison](./dashboard-compare.png)
+![Design Comparison](./images/task6-dashboard-compare.png)
 
 *Comparison between the Figma design (left) and the final implementation (right)*
 
@@ -69,11 +72,11 @@ The job details page provides comprehensive information about each job posting, 
 - **Categories**: Job categories with color-coded tags
 - **Required Skills**: Skills needed for the position
 
-![Job Details Page](./job-details-compare.png)
+![Job Details Page](./images/task6-job-details.png)
 
 *Job details page showing comprehensive job information*
 
-## Additional Implementation Details
+### Additional Implementation Details
 
 ### Component Modularization
 - **Reusable Components**: Parts of the page were modularized and split into different components:
@@ -115,6 +118,150 @@ The job details page provides comprehensive information about each job posting, 
 
 ### Git Workflow
 - **Branch Management**: Git branches are used to track different project phases and tasks.
+
+## Task 7: Integrating API Data into the Application
+
+### Overview
+
+Task 7 involved integrating the Akil Backend API to replace static JSON data with live API data. The application now fetches opportunities in real-time from the API endpoint and handles all data operations dynamically.
+
+### API Integration Implementation
+
+#### 1. API Service Layer (`src/services/api.ts`)
+
+Created a dedicated API service module with the following functions:
+
+- **`fetchOpportunities()`**: Fetches all opportunities from `/opportunities/search` endpoint
+  - Returns an array of opportunity objects
+  - Handles HTTP errors and API response validation
+  - Throws descriptive errors for debugging
+
+- **`fetchOpportunityById(id: string)`**: Fetches a single opportunity by ID from `/opportunities/:id` endpoint
+  - Used for individual job detail pages
+  - Validates response structure
+  - Handles invalid IDs gracefully
+
+**Key Features:**
+- TypeScript interfaces for type safety (`ApiOpportunity`, `ApiResponse`, `ApiSingleResponse`)
+- Comprehensive error handling
+- Base URL configuration for easy environment switching
+
+#### 2. Data Mapping Utility (`src/utils/apiMapper.ts`)
+
+Created a mapper utility to transform API response data to match our application's `JobPosting` interface:
+
+- **`mapApiOpportunityToJobPosting()`**: Converts API opportunity objects to `JobPosting` format
+  - **Responsibilities**: Converts newline-separated string to array
+  - **Ideal Candidate**: Parses string description into traits array
+  - **Dates**: Formats ISO date strings to readable format (e.g., "Jul 1, 2023")
+  - **Location**: Converts location array to comma-separated string
+  - **Default Values**: Provides fallbacks for missing data
+
+**Helper Functions:**
+- `formatDate()`: Converts ISO dates to readable format
+- `splitByNewlines()`: Splits text by newlines into array
+- `parseIdealCandidateTraits()`: Parses ideal candidate string into traits array
+
+#### 3. Updated Components
+
+**ListingPage (`src/components/ListingPage.tsx`):**
+- Replaced static JSON import with API data fetching
+- Added `useEffect` hook to fetch opportunities on component mount
+- Implemented loading state with spinner animation
+- Added error state with user-friendly error messages and retry functionality
+- Maintains backward compatibility with existing sorting and pagination
+- Stores API opportunities in a map for efficient lookup by ID
+
+**JobDetailsPage (`src/components/JobDetailsPage.tsx`):**
+- Fetches individual opportunities by API ID
+- Falls back to JSON data for numeric indices (backward compatibility)
+- Handles both API IDs and legacy numeric indices
+- Loading and error states for better UX
+- Automatic retry on API fetch failure
+
+**JobCard (`src/components/JobCard.tsx`):**
+- Updated to accept optional `jobId` prop for API-based navigation
+- Uses API ID when available, falls back to index for legacy support
+
+### Error Handling
+
+The implementation includes comprehensive error handling:
+
+- **Network Errors**: Handles failed HTTP requests with user-friendly messages
+- **Invalid Responses**: Validates API response structure before processing
+- **Missing Data**: Provides fallback values for missing or invalid data
+- **Loading States**: Shows loading spinners during API requests
+- **Error Recovery**: Retry buttons and graceful degradation
+
+### API Endpoints Used
+
+- **Base URL**: `https://akil-backend.onrender.com`
+- **Search Endpoint**: `GET /opportunities/search`
+  - Returns all available opportunities
+  - Response includes: `success`, `data`, `count`, `message`
+  
+- **Get by ID Endpoint**: `GET /opportunities/:id`
+  - Returns a single opportunity by ID
+  - Example: `/opportunities/65509e9353a7667de6ef5a60`
+
+### Testing
+
+Created comprehensive testing documentation and scripts:
+
+- **`API_TESTING.md`**: Complete guide for testing API endpoints from command line
+- **`test_api.sh`**: Automated test script that validates:
+  - Search endpoint functionality
+  - Individual opportunity fetching
+  - Error handling
+  - Response structure validation
+  - Statistics (total, in-person, virtual opportunities)
+
+**Quick Test Commands:**
+```bash
+# Get all opportunities
+curl -s "https://akil-backend.onrender.com/opportunities/search" | jq '.'
+
+# Get specific opportunity
+curl -s "https://akil-backend.onrender.com/opportunities/65509e9353a7667de6ef5a60" | jq '.'
+
+# Run automated tests
+./test_api.sh
+```
+
+### Code Quality
+
+- **Type Safety**: Full TypeScript coverage with proper interfaces
+- **Separation of Concerns**: API logic separated from UI components
+- **Error Handling**: Comprehensive error handling at all levels
+- **Documentation**: Inline comments and JSDoc documentation
+- **Maintainability**: Clean, organized code following best practices
+
+### Data Flow
+
+1. **Component Mount**: `ListingPage` component mounts
+2. **API Request**: `fetchOpportunities()` is called
+3. **Data Transformation**: API response is mapped to `JobPosting` format
+4. **State Update**: Jobs are stored in component state and API map
+5. **Rendering**: Jobs are displayed in cards with loading/error states
+6. **Navigation**: Clicking a card navigates using API ID
+7. **Detail Fetch**: `JobDetailsPage` fetches individual opportunity if needed
+
+### Backward Compatibility
+
+The implementation maintains backward compatibility:
+- Supports both API IDs and numeric indices
+- Falls back to JSON data when API is unavailable
+- Handles mixed scenarios gracefully
+
+### Screenshots
+
+![Dashboard Page with API Data](./images/task7-dashboard.png)
+
+*Dashboard page showing job opportunities fetched from the API*
+
+![Job Details Page with API Data](./images/task7-job-details.png)
+
+*Job details page displaying comprehensive information fetched from the API*
 
 ## Getting Started
 
