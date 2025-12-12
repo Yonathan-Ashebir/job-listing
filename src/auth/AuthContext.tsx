@@ -22,6 +22,7 @@ interface AuthContextType {
   verifyEmail: (data: VerifyEmailRequest) => Promise<AuthResponse>;
   signin: (data: SigninRequest) => Promise<AuthResponse>;
   signout: () => void;
+  refreshAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -108,6 +109,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/signin';
   };
 
+  const refreshAuth = () => {
+    const storedToken = getToken();
+    const storedUserData = getUserData();
+    
+    if (storedToken) {
+      setToken(storedToken);
+    } else {
+      setToken(null);
+    }
+    
+    if (storedUserData) {
+      setUser(storedUserData);
+    } else {
+      setUser(null);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -117,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     verifyEmail: handleVerifyEmail,
     signin: handleSignin,
     signout: handleSignout,
+    refreshAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

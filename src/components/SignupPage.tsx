@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -6,6 +6,29 @@ import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';
 import { fonts } from '../theme/fonts';
 import { typography } from '../theme/typography';
+import { storeToken, storeUserData } from '../api/authService';
+
+// Google OAuth Client ID
+const GOOGLE_CLIENT_ID = '50420894422-hkmj1ge13u0v5e2a556v0a0u7j8ct85o.apps.googleusercontent.com';
+
+// Extend Window interface for Google API
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        oauth2: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: { access_token: string }) => void;
+          }) => {
+            requestAccessToken: () => void;
+          };
+        };
+      };
+    };
+  }
+}
 
 interface FormErrors {
   name?: string;
@@ -18,7 +41,7 @@ interface FormErrors {
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
+  const { signup, refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,6 +52,132 @@ const SignupPage = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  // Check if Google Identity Services is loaded
+  useEffect(() => {
+    const checkGoogleLoaded = () => {
+      if (window.google?.accounts?.oauth2) {
+        // Google Identity Services is ready
+        return;
+      }
+      
+      // Wait a bit and check again (script loads asynchronously)
+      const checkInterval = setInterval(() => {
+        if (window.google?.accounts?.oauth2) {
+          clearInterval(checkInterval);
+        }
+      }, 100);
+      
+      // Clear interval after 5 seconds to avoid infinite checking
+      setTimeout(() => clearInterval(checkInterval), 5000);
+    };
+
+    checkGoogleLoaded();
+  }, []);
+
+  // Handle Google OAuth signup
+  const handleGoogleSignup = () => {
+    if (!window.google?.accounts?.oauth2) {
+      setErrors({ general: 'Google authentication is not available. Please wait a moment and try again.' });
+      return;
+    }
+
+    setIsGoogleLoading(true);
+    setErrors({});
+
+    try {
+      // Note: initTokenClient automatically uses window.location.origin as the redirect URI
+      // This origin must be registered in Google Cloud Console under "Authorized JavaScript origins"
+      // and "Authorized redirect URIs"
+      const tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+        callback: async (response) => {
+          if (response.access_token) {
+            try {
+              // Fetch user info from Google
+              let userInfoResponse;
+              try {
+                userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+                  headers: {
+                    Authorization: `Bearer ${response.access_token}`,
+                  },
+                });
+              } catch (networkError) {
+                throw new Error('Network error: Unable to connect to Google. Please check your internet connection and try again.');
+              }
+
+              if (!userInfoResponse.ok) {
+                const errorText = await userInfoResponse.text().catch(() => 'Unknown error');
+                throw new Error(`Failed to fetch user information from Google: ${userInfoResponse.status} ${errorText}`);
+              }
+
+              let userInfo;
+              try {
+                userInfo = await userInfoResponse.json();
+              } catch (jsonError) {
+                throw new Error('Invalid response from Google. Please try again.');
+              }
+
+              const email = userInfo?.email;
+
+              if (!email) {
+                throw new Error('Email not provided by Google. Please ensure your Google account has an email address.');
+              }
+
+              // Validate email domain - only @a2sv.org emails allowed
+              if (!email.endsWith('@a2sv.org')) {
+                throw new Error('Only @a2sv.org email addresses are allowed for Google sign-in. Please use an A2SV email address.');
+              }
+
+              // Create user data with Google email
+              const userData = {
+                id: userInfo.id || `google-${Date.now()}`,
+                name: userInfo.name || email.split('@')[0],
+                email: email,
+                role: 'user',
+                profilePicUrl: userInfo.picture || '',
+                profileComplete: false,
+                profileStatus: 'incomplete',
+              };
+
+              // Store user data and a dummy token (since we're not using backend auth for Google OAuth)
+              // In a real app, you'd send this to your backend to create/authenticate the user
+              const dummyToken = `google-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              storeToken(dummyToken);
+              storeUserData(userData);
+
+              // Refresh auth context to update user state
+              refreshAuth();
+              
+              // Navigate to dashboard
+              navigate('/');
+              setIsGoogleLoading(false);
+            } catch (error) {
+              console.error('Error fetching user info:', error);
+              setErrors({
+                general: error instanceof Error ? error.message : 'Failed to authenticate with Google. Please try again.',
+              });
+              setIsGoogleLoading(false);
+            }
+          } else {
+            setErrors({ general: 'Google authentication was cancelled or failed.' });
+            setIsGoogleLoading(false);
+          }
+        },
+      });
+
+      // Request access token
+      tokenClient.requestAccessToken();
+    } catch (error) {
+      console.error('Error initializing Google OAuth:', error);
+      setErrors({
+        general: error instanceof Error ? error.message : 'Failed to initialize Google authentication. Please try again.',
+      });
+      setIsGoogleLoading(false);
+    }
+  };
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -170,6 +319,8 @@ const SignupPage = () => {
             {/* Google Sign Up Button */}
             <button
               type="button"
+              onClick={handleGoogleSignup}
+              disabled={isGoogleLoading}
               style={{
                 width: '100%',
                 height: '50px',
@@ -181,7 +332,8 @@ const SignupPage = () => {
                 border: '1px solid #CCCCF5',
                 padding: '12px 16px',
                 backgroundColor: colors.white,
-                cursor: 'pointer',
+                cursor: isGoogleLoading ? 'not-allowed' : 'pointer',
+                opacity: isGoogleLoading ? 0.6 : 1,
               }}
             >
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -201,9 +353,24 @@ const SignupPage = () => {
                   color: '#4640DE',
                 }}
               >
-                Sign Up with Google
+                {isGoogleLoading ? 'Connecting to Google...' : 'Sign Up with Google'}
               </span>
             </button>
+            <span
+              style={{
+                fontFamily: fonts.epilogue,
+                fontWeight: 400,
+                fontSize: '12px',
+                lineHeight: '160%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+                color: colors.gray.medium,
+                opacity: 0.6,
+                marginTop: '-8px',
+              }}
+            >
+              (only a2sv.org)
+            </span>
 
           </div>
           {/* Divider */}
