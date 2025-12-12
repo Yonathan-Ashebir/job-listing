@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import JobDetails from './JobDetails';
 import type { JobPosting } from '../types';
-import { fetchOpportunityById } from '../services/api';
+import { fetchOpportunityById } from '../api/api';
 import { mapApiOpportunityToJobPosting } from '../utils/apiMapper';
 import { apiOpportunitiesMap } from './ListingPage';
 import jobDataJson from '../data/jobPostings.json';

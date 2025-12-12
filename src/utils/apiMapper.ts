@@ -3,7 +3,7 @@
  */
 
 import type { JobPosting } from '../types';
-import type { ApiOpportunity } from '../services/api';
+import type { ApiOpportunity } from '../api/api';
 
 /**
  * Formats a date string to a readable format

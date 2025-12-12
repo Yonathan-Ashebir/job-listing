@@ -1,8 +1,10 @@
+import { useState, useRef, useEffect } from 'react';
 import type { SortOption } from '../types';
 import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';
 import { fonts } from '../theme/fonts';
 import { typography } from '../theme/typography';
+import { useAuth } from '../auth/AuthContext';
 
 type HeadlineProps = {
     resultsCount: number;
@@ -60,6 +62,174 @@ const Sort = ({ sortBy, onSortChange }: { sortBy: SortOption; onSortChange: (sor
     );
 };
 
+const UserIcon = () => {
+    const { user, signout } = useAuth();
+    const [isHovered, setIsHovered] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsHovered(false);
+            }
+        };
+
+        if (isHovered) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isHovered]);
+
+    if (!user) {
+        return null;
+    }
+
+    return (
+        <div
+            ref={dropdownRef}
+            className="relative"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ cursor: 'pointer' }}
+        >
+            <div
+                style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: user.profilePicUrl ? 'transparent' : colors.primary.blue,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: colors.white,
+                    fontFamily: fonts.epilogue,
+                    fontWeight: typography.fontWeights.semibold,
+                    fontSize: typography.fontSizes.sm,
+                    overflow: 'hidden',
+                    backgroundImage: user.profilePicUrl ? `url(${user.profilePicUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                {!user.profilePicUrl && user.name.charAt(0).toUpperCase()}
+            </div>
+            
+            {isHovered && (
+                <div
+                    className="dropdown-enter"
+                    style={{
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: dimensions.spacing.sm,
+                        backgroundColor: colors.white,
+                        borderRadius: '8px',
+                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                        padding: dimensions.spacing.md,
+                        minWidth: '250px',
+                        zIndex: 1000,
+                    }}
+                >
+                    {/* Triangle arrow pointing to user icon */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '12px',
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            borderBottom: '8px solid white',
+                            filter: 'drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.1))',
+                        }}
+                    />
+                    <div style={{ marginBottom: dimensions.spacing.md }}>
+                        <div
+                            style={{
+                                fontFamily: fonts.epilogue,
+                                fontWeight: typography.fontWeights.semibold,
+                                fontSize: typography.fontSizes.sm,
+                                color: colors.gray.dark,
+                                marginBottom: dimensions.spacing.xs,
+                            }}
+                        >
+                            {user.name}
+                        </div>
+                        <div
+                            style={{
+                                fontFamily: fonts.epilogue,
+                                fontSize: typography.fontSizes.xs,
+                                color: colors.gray.medium,
+                                marginBottom: dimensions.spacing.xs,
+                            }}
+                        >
+                            {user.email}
+                        </div>
+                        <div
+                            style={{
+                                fontFamily: fonts.epilogue,
+                                fontSize: typography.fontSizes.xs,
+                                color: colors.gray.medium,
+                                textTransform: 'capitalize',
+                            }}
+                        >
+                            Role: {user.role}
+                        </div>
+                        {user.profileStatus && (
+                            <div
+                                style={{
+                                    fontFamily: fonts.epilogue,
+                                    fontSize: typography.fontSizes.xs,
+                                    color: user.profileComplete ? colors.primary.green : colors.primary.orange,
+                                    marginTop: dimensions.spacing.xs,
+                                    textTransform: 'capitalize',
+                                }}
+                            >
+                                Profile: {user.profileStatus}
+                            </div>
+                        )}
+                    </div>
+                    <div
+                        style={{
+                            borderTop: `1px solid ${colors.gray.light}`,
+                            paddingTop: dimensions.spacing.sm,
+                        }}
+                    >
+                        <button
+                            onClick={signout}
+                            style={{
+                                width: '100%',
+                                padding: dimensions.spacing.sm,
+                                backgroundColor: colors.primary.blue,
+                                color: colors.white,
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontFamily: fonts.epilogue,
+                                fontWeight: typography.fontWeights.semibold,
+                                fontSize: typography.fontSizes.sm,
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#3A35C7';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.primary.blue;
+                            }}
+                        >
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Headline = ({ resultsCount, sortBy, onSortChange }: HeadlineProps) => {
     return (
         <div className="flex justify-between items-center mb-8">
@@ -93,6 +263,8 @@ const Headline = ({ resultsCount, sortBy, onSortChange }: HeadlineProps) => {
 
             <div className="flex items-center" style={{ gap: dimensions.spacing.lg, marginLeft: '20px' }}>
                 <Sort sortBy={sortBy} onSortChange={onSortChange} />
+
+                <UserIcon />
 
                 <div
                     className="opacity-10"

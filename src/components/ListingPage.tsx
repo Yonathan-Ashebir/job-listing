@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { JobPosting, SortOption } from '../types';
 import JobCard from './JobCard';
 import Headline from './Headline';
-import { fetchOpportunities } from '../services/api';
+import { fetchOpportunities } from '../api/api';
 import { mapApiOpportunityToJobPosting } from '../utils/apiMapper';
 import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';

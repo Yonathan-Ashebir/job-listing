@@ -263,6 +263,55 @@ The implementation maintains backward compatibility:
 
 *Job details page displaying comprehensive information fetched from the API*
 
+## Task 8: Authentication Implementation
+
+### Overview
+
+Task 8 involved implementing a complete authentication system with user signup, email verification, and signin functionality. The implementation includes secure token management, client-side validation, and protected routes.
+
+### Implementation
+
+#### Signup and Signin Pages
+- Created separate pages for user signup and signin with form validation
+- Implemented client-side validation for all input fields with real-time error feedback
+- Integrated with provided API endpoints for user registration and authentication
+- Signup data is stored in localStorage to persist across page refreshes
+
+#### Email Verification
+- Implemented OTP verification page with 4-digit code input
+- Added 30-second resend interval with countdown timer
+- Enhanced OTP input with arrow key navigation, backspace handling, and auto-focus
+- Visual highlighting of active field (even when empty)
+
+#### Route Protection
+- All routes are protected by default, except authentication routes (`/signup`, `/signin`, `/verify-email`)
+- Unauthenticated users are automatically redirected to the signin page
+- Access tokens stored securely in localStorage with key `job-listing-accessToken`
+
+#### Profile/Logout Icon
+- Added user icon in the dashboard header (between "Sort By" and divider)
+- Displays user's profile picture if available, otherwise shows first initial
+- Hover dropdown shows user details (name, email, role, profile status) and sign out button
+- Only visible when user is authenticated
+
+### Screenshots
+
+![Signup Page](./images/task8-signup.png)
+
+*Signup page with form validation and role selection*
+
+![Signin Page](./images/task8-signin.png)
+
+*Signin page with email and password fields*
+
+![Email Verification Page](./images/task8-verify-email.png)
+
+*Email verification page with OTP input field*
+
+![Protected Dashboard](./images/task8-dashboard.png)
+
+*Dashboard page accessible only after authentication*
+
 ## Getting Started
 
 ### Prerequisites

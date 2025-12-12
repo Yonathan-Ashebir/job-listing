@@ -7,3 +7,33 @@ body {
     font-family: 'Epilogue', sans-serif;
   }
 }
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.dropdown-enter {
+  animation: dropdownFadeIn 0.2s ease-out forwards;
+}
+
+.dropdown-exit {
+  animation: dropdownFadeOut 0.15s ease-in forwards;
+}
