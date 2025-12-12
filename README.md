@@ -317,6 +317,54 @@ Task 8 involved implementing a complete authentication system with user signup, 
 
 *Dashboard page accessible only after authentication*
 
+## Task 9: Bookmark Functionality
+
+### Overview
+
+Implemented bookmark functionality allowing authenticated users to save and manage favorite job opportunities. Features include optimistic UI updates, error handling, and comprehensive test coverage.
+
+### Features
+
+- **Bookmark Toggle**: Each job card displays a bookmark button in the top-right corner
+- **Visual Feedback**: Filled icon for bookmarked jobs, outline for unbookmarked
+- **Sort Option**: Added "Bookmarked" to sort dropdown (alongside "Most relevant" and "Most recent")
+- **Filtering**: Selecting "Bookmarked" shows only bookmarked jobs
+- **Optimistic Updates**: UI updates immediately, then syncs with server
+- **Error Handling**: User-friendly error messages with automatic recovery
+
+### How It Works
+
+- **Authentication Required**: Bookmark functionality is only available to authenticated users
+- **State Management**: Bookmarks are managed through a React context that handles state globally
+- **Optimistic Updates**: UI updates immediately when toggling bookmarks, then confirms with server
+- **Error Recovery**: If an operation fails, the UI automatically reverts to the previous state
+
+### ⚠️ Important Gotcha: Google Authentication Bookmark Storage
+
+**Google-authenticated users store bookmarks locally instead of using the API.**
+
+When a user signs in via Google OAuth:
+- Bookmarks are stored in **localStorage per email address**
+- API endpoints are **NOT used** for Google-authenticated users
+- Bookmarks are isolated per email and persist across sessions but are device-specific
+
+**Regular authentication (email/password):**
+- Uses API endpoints normally
+- Bookmarks are stored on the server and sync across devices
+
+The system automatically detects Google authentication and switches to localStorage storage accordingly.
+
+### Testing
+
+- **Unit Tests**: Component rendering, user interactions, state management, and error handling
+- **E2E Tests**: Bookmark toggle functionality, authentication checks, and state persistence
+
+### Screenshots
+
+![Dashboard with Bookmarks](./images/task9-dashboard.png)
+
+*Dashboard showing job cards with bookmark buttons*
+
 ## Getting Started
 
 ### Prerequisites

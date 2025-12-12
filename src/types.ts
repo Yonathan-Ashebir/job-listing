@@ -25,5 +25,5 @@ export interface JobData {
   job_postings: JobPosting[];
 }
 
-export type SortOption = 'Most relevant' | 'Most recent';
+export type SortOption = 'Most relevant' | 'Most recent' | 'Bookmarked';
 

@@ -7,6 +7,8 @@ import { mapApiOpportunityToJobPosting } from '../utils/apiMapper';
 import { colors } from '../theme/colors';
 import { dimensions } from '../theme/dimensions';
 import { fonts } from '../theme/fonts';
+import { useBookmarks } from '../contexts/BookmarkContext';
+import { useAuth } from '../auth/AuthContext';
 
 // Store API opportunities with their IDs for navigation
 export const apiOpportunitiesMap = new Map<string, JobPosting>();
@@ -17,6 +19,8 @@ const ListingPage = () => {
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { bookmarkedIds } = useBookmarks();
+  const { isAuthenticated } = useAuth();
   const itemsPerPage = 100;
 
   // Fetch opportunities from API
@@ -57,18 +61,47 @@ const ListingPage = () => {
     loadOpportunities();
   }, []);
 
-  // Sort jobs based on selected option
+  // Sort and filter jobs based on selected option
   const sortedJobs = useMemo(() => {
-    const sorted = [...jobs];
+    let filtered = [...jobs];
+    
+    // Filter by bookmarked if selected
+    if (sortBy === 'Bookmarked') {
+      if (!isAuthenticated) {
+        // If not authenticated, show empty list
+        filtered = [];
+      } else {
+        // Filter to only show bookmarked jobs
+        filtered = jobs.filter((job, index) => {
+          // Find the API ID for this job
+          let apiId: string | undefined;
+          for (const [id, mappedJob] of apiOpportunitiesMap.entries()) {
+            if (
+              mappedJob.title === job.title &&
+              mappedJob.company === job.company &&
+              mappedJob.about.posted_on === job.about.posted_on
+            ) {
+              apiId = id;
+              break;
+            }
+          }
+          const jobId = apiId || index.toString();
+          return bookmarkedIds.has(jobId);
+        });
+      }
+    }
+    
+    // Sort by date if "Most recent" is selected
     if (sortBy === 'Most recent') {
-      sorted.sort((a, b) => {
+      filtered.sort((a, b) => {
         const dateA = new Date(a.about.posted_on).getTime();
         const dateB = new Date(b.about.posted_on).getTime();
         return dateB - dateA;
       });
     }
-    return sorted;
-  }, [jobs, sortBy]);
+    
+    return filtered;
+  }, [jobs, sortBy, bookmarkedIds, isAuthenticated]);
 
   // Paginate jobs
   const paginatedJobs = useMemo(() => {
